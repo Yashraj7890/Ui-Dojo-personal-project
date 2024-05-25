@@ -71,17 +71,6 @@ const UserAuth = ({
           </div>
         )}
 
-        <div className="text-center mt-[1rem] text-sm text-gray-600">or</div>
-        <div className="text-center">
-          <button
-            onClick={signInWithGoogle}
-            type="submit"
-            className="outline-none bg-white border border-black px-3 py-2 rounded-md text-black text-md cursor-pointer   mx-auto mt-[1rem]"
-          >
-            Sign {isLogin ? "in" : "up"} with{" "}
-            <i class="fa-brands fa-google"></i>oogle
-          </button>
-        </div>
       </div>
     </div>
   );
