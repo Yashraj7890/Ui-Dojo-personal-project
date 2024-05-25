@@ -4,10 +4,12 @@ import ReactCodeMirror from "@uiw/react-codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc,updateDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase.config";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useLocation } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const NewProject = () => {
   const [html, setHtml] = useState("<div>Hello World !<div/>");
@@ -17,37 +19,98 @@ const NewProject = () => {
   const [editing, setEditing] = useState(false);
   const [Title, setTitle] = useState("Untitled project");
   const user = useSelector((state) => state.user?.user);
+  const location = useLocation();
+  const { variant, project } = location.state || {};
+  const [loading,setloading]=useState(false);
 
-  const saveProgram = async () => {
-    if(user){
-      const id = `${Date.now()}`;
-      const _doc = {
-        id: id,
-        title: Title,
-        html: html,
-        css: css,
-        js: js,
-        output: output,
-        user:user,
-        bookmarkedBy:[]
-      };
-      await setDoc(doc(db, "Projects", id), _doc)
-        .then((res) => {
-          toast.success("Code saved successfully !");
-        })
-        .catch((err) => {
-          toast.error("Error saving your code !");
-          console.log(err);
-        });
-    }else{
-      toast.error("Please Sign in first !")
+  const saveProgram = async (variant) => {
+    setloading(true);
+    if (user) {
+      if (variant == "You are editing your project !") {
+        const updatedFields = {
+          title: Title,
+          html: html,
+          css: css,
+          js: js,
+          output: output,
+        };
+        await updateDoc(doc(db, "Projects", project.id), updatedFields)
+          .then(() => {
+            setHtml("");setCss("");setJs("");setTitle("Untitled project");
+            Swal.fire({
+              title:"Project updated successfully!",
+              text:"Now you are working on a new project",
+              icon:"success"
+            })
+            
+          })
+          .catch((err) => {
+            Swal.fire({
+              title:"Error updating your project!",
+              text:err.message,
+              icon:"success"
+            })
+      
+          });
+      } else {
+        const id = `${Date.now()}`;
+        const _doc = {
+          id: id,
+          title: Title,
+          html: html,
+          css: css,
+          js: js,
+          output: output,
+          user: user,
+          bookmarkedBy: [],
+        };
+        await setDoc(doc(db, "Projects", id), _doc)
+          .then((res) => {
+            setHtml("");setCss("");setJs("");setTitle("Untitled project");
+            Swal.fire({
+              title:"Project saved successfully!",
+              text:"Now you are working on a new project",
+              icon:"success"
+            })
+          })
+          .catch((err) => {
+            Swal.fire({
+              title:"Error saving your code !",
+              icon:"error",
+              text:err.message
+            })
+         
+          });
+      }
+    } else {
+      Swal.fire({
+        title:"Please sign in first !",
+        icon:"error",
+
+      })
     }
-    
+    setloading(false);
   };
 
   useEffect(() => {
     UpdateOutput();
   }, [html, css, js]);
+
+  useEffect(() => {
+    const copy = () => {
+      if (variant && project) {
+        toast.success(variant);
+        setHtml(project.html);
+        setCss(project.css);
+        setJs(project.js);
+        if (variant == "You are editing your project !") {
+          setTitle(project.title);
+        }
+      }
+    };
+    copy();
+  }, []);
+
   const UpdateOutput = () => {
     const combinedOutput = `
     <html>
@@ -62,6 +125,7 @@ const NewProject = () => {
     `;
     setOutput(combinedOutput);
   };
+
   return (
     <div className="w-screen h-screen overflow-hidden">
       <ToastContainer
@@ -110,10 +174,11 @@ const NewProject = () => {
               )}
               {!editing && (
                 <button
-                  onClick={saveProgram}
+                  onClick={() => saveProgram(variant)}
                   className="text-white  bg-purple-700 hover:bg-purple-600  rounded-md px-[0.5rem] py-[0.2rem]"
+                  disabled={loading}
                 >
-                  Save
+                {loading?(<i class="fa-solid fa-spinner fa-spin"></i>):"Save"}                  
                 </button>
               )}
             </>

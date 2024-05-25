@@ -8,7 +8,8 @@ const UserAuth = ({
   isLogin,
   setStatus,
   createNewUser,
-  login
+  login,
+  loading
 }) => {
   return (
     <div className="flex flex-col items-start justify-start gap-1">
@@ -39,14 +40,17 @@ const UserAuth = ({
         </div>
         {isLogin ? (
           <div className="text-right text-emerald-500 px-[1rem] py-[0.5rem]">
+           
             <div className="cursor-pointer" onClick={() => setStatus(false)}>
-              Create an account
+            <span className="text-[0.8rem] text-gray-400 pr-[1rem]">Dont have an account? {"->"}</span>
+            <span className="hover:underline">Create an account</span> 
             </div>
           </div>
         ) : (
           <div className="text-right text-emerald-500 px-[1rem] py-[0.5rem]">
-            <div className="cursor-pointer" onClick={() => setStatus(true)}>
-              Have an account ?
+          <div className="cursor-pointer" onClick={() => setStatus(true)}>
+            
+            <span className="hover:underline">Have an account?</span> 
             </div>
           </div>
         )}
@@ -54,19 +58,20 @@ const UserAuth = ({
           <div className="text-center">
             <button
               onClick={login}
+              disabled={loading}
               className="outline-none bg-emerald-500 px-3 py-2 rounded-md text-white text-md cursor-pointer hover:bg-emerald-700 w-[5.5rem] mx-auto mt-[1rem]"
             >
-              Log In
+              {loading?(<i class="fa-solid fa-spinner fa-spin text-lg"></i>):("Log In")}
             </button>
           </div>
         ) : (
           <div className="text-center">
             <button
-             
+             disabled={loading}
               onClick={createNewUser}
               className="outline-none bg-emerald-500 px-3 py-2 rounded-md text-white text-md cursor-pointer hover:bg-emerald-700 w-[5.5rem] mx-auto mt-[1rem]"
             >
-              Sign Up
+              {loading?(<i class="fa-solid fa-spinner fa-spin text-lg"></i>):("Sign Up")}
             </button>
           </div>
         )}

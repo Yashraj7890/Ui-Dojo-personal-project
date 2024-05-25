@@ -4,16 +4,15 @@ import {
   useNavigate,
   Routes,
   Route,
-  Link,
   Navigate,
 } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import Home from "./components/Home";
 import { auth, db } from "./firebase/firebase.config";
-import { collection, doc, onSnapshot, orderBy, query, setDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { SET_USER } from "./context/actions/userActions";
 import NewProject from "./components/NewProject";
-import { SET_PROJECTS } from "./context/actions/projectActions";
+
 
 const App = () => {
   const dispatch = useDispatch();

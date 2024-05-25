@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { db } from "../firebase/firebase.config"; // Adjust the path according to your setup
-import { updateDoc, arrayUnion, doc, where, query, getDocs, collection, getFirestore } from "firebase/firestore";
-import { ToastContainer, toast } from "react-toastify";
+import { db } from "../firebase/firebase.config";
+import {
+  updateDoc,
+  arrayUnion,
+  doc,
+  where,
+  query,
+  getDocs,
+  collection,
+  getFirestore,
+} from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
+import Swal from "sweetalert2";
 
-// Fetch all projects from Firestore
+
 const getAllProjects = async () => {
   const db = getFirestore();
   const projectsRef = collection(db, "Projects");
@@ -22,7 +32,6 @@ const getAllProjects = async () => {
   }
 };
 
-// Fetch bookmarked projects for a specific user
 const getBookmarkedProjects = async (uid) => {
   const db = getFirestore();
   const projectsRef = collection(db, "Projects");
@@ -44,7 +53,6 @@ const getBookmarkedProjects = async (uid) => {
   }
 };
 
-// Fetch projects created by a specific user
 export const getUserProjects = async (uid) => {
   const db = getFirestore();
   const projectsRef = collection(db, "Projects");
@@ -94,7 +102,9 @@ const Projects = ({ type, term, setTerm }) => {
     if (term.length > 0 && projects.length > 0) {
       const lowerCaseTerm = term.toLowerCase();
       setFiltered(
-        projects.filter((project) => project.title.toLowerCase().includes(lowerCaseTerm))
+        projects.filter((project) =>
+          project.title.toLowerCase().includes(lowerCaseTerm)
+        )
       );
     } else {
       setFiltered([]);
@@ -113,13 +123,15 @@ const Projects = ({ type, term, setTerm }) => {
         ) : (
           <>
             {displayProjects.length === 0 ? (
-              <div>
-                No projects for this category
-                <i className="fa-solid fa-face-frown text-[1.5rem] ml-[0.2rem]"></i>
-              </div>
+              <div>No projects for this category {":("}</div>
             ) : (
               displayProjects.map((project) => (
-                <Card key={project.id} user={user} project={project} />
+                <Card
+                  key={project.id}
+                  user={user}
+                  project={project}
+                  type={type}
+                />
               ))
             )}
           </>
@@ -129,24 +141,45 @@ const Projects = ({ type, term, setTerm }) => {
   );
 };
 
-const Card = ({ project, user }) => {
+const Card = ({ project, user, type }) => {
+  const [loading, setLoading] = useState(false);
+  const navigate=useNavigate();
   const handleBookmarkClick = async () => {
+    setLoading(true);
     const projectRef = doc(db, "Projects", project.id);
     try {
       await updateDoc(projectRef, {
         bookmarkedBy: arrayUnion(user.uid),
       });
-      toast.success("Bookmarked successfully!");
+      Swal.fire({
+        title: "Bookmarked successfully !",
+        icon: "info",
+      });
     } catch (error) {
-      console.error("Error bookmarking the project: ", error);
-      toast.error("Error bookmarking the project");
+      Swal.fire({
+        title: "Error bookmarking the project !",
+        text: error.message,
+        icon: "info",
+      });
     }
+    setLoading(false);
   };
+
+  const handleCopyClick = async (variant) => {
+    setLoading(true);
+    navigate('/newProject', { state: { variant,project  } });
+    setLoading(false);
+  };
+
+
+
 
   return (
     <div className="w-full cursor-pointer md:w-[430px] h-[355px] rounded-xl p-4 flex flex-col bg-gray-200 items-center gap-4 shadow-lg justify-center border border-gray-300">
-      <ToastContainer position="top-center" autoClose={2000} hideProgressBar={false} closeOnClick theme="dark" />
-      <div className="bg-white w-full h-full overflow-hidden" style={{ height: "100%" }}>
+      <div
+        className="bg-white w-full h-full overflow-hidden"
+        style={{ height: "100%" }}
+      >
         <iframe
           title="Result"
           srcDoc={project.output}
@@ -156,25 +189,60 @@ const Card = ({ project, user }) => {
       <div className="flex items-center justify-start gap-3 w-full text-black bg-gray-100 border-gray-300 shadow-lg border rounded-md">
         <div className="w-14 h-14 flex items-center justify-center rounded-xl overflow-hidden cursor-pointer">
           {project?.user?.photoURL ? (
-            <img src={project.user.photoURL} className="w-[2.2rem] shadow-lg" alt="User" />
+            <img
+              src={project.user.photoURL}
+              className="w-[2.2rem] shadow-lg"
+              alt="User"
+            />
           ) : (
             <i className="fa-solid fa-circle-user text-[1.8rem]"></i>
           )}
         </div>
         <div className="flex flex-col">
-          <p className="text-black text-lg capitalize">{project.title}</p>
+          <p className="text-black text-lg ">{project.title}</p>
           <p className="text-primaryText text-sm capitalize">
-            {project?.user?.displayName ? `by ${project.user.displayName}` : project.user.email.split("@")[0]}
+            {project?.user?.displayName
+              ? `by ${project.user.displayName}`
+              : project.user.email.split("@")[0]}
           </p>
         </div>
-        <i
-          className="fa-regular fa-copy hover:bg-gray-300 p-2 rounded-2xl cursor-pointer"
-          onClick={() => toast.info("Feature in development :)")}
-        ></i>
-        <i
-          className="fa-solid fa-bookmark hover:bg-gray-300 ml-auto p-2 mr-[1rem] rounded-2xl cursor-pointer"
-          onClick={handleBookmarkClick}
-        ></i>
+
+      
+        {project.user.uid!==user.uid ? (
+          loading ? (
+            <i className="text-[1.2rem] fa-solid fa-spinner fa-spin p-2 ml-[auto] rounded-2xl cursor-pointer"></i>
+          ) : (
+            <i
+              className="text-[1.2rem] fa-solid fa-code-fork hover:bg-gray-300 p-2 ml-[auto] rounded-2xl cursor-pointer"
+              onClick={()=>handleCopyClick("Forked a project !")}
+            ></i>
+          )
+        ) : (
+          <></>
+        )}
+
+        {project.user.uid===user.uid ? (
+          loading ? (
+            <i className="text-[1.2rem] fa-solid fa-spinner fa-spin p-2 ml-[auto] rounded-2xl cursor-pointer"></i>
+          ) : (
+            <i
+              className="text-[1.2rem] fa-solid fa-pen-to-square hover:bg-gray-300 p-2 ml-[auto] rounded-2xl cursor-pointer"
+              onClick={()=>handleCopyClick("You are editing your project !")}
+            ></i>
+          )
+        ) : (
+          <></>
+        )}
+
+        {loading ? (
+          <i class="text-[1.2rem] fa-solid fa-spinner fa-spin p-2 ml-[auto] rounded-2xl cursor-pointer"></i>
+        ) : (
+          <i
+            className=" text-[1.2rem] fa-solid fa-bookmark hover:bg-gray-300 ml-auto p-2 mr-[1rem] rounded-2xl cursor-pointer"
+            onClick={handleBookmarkClick}
+          ></i>
+        )}
+
       </div>
     </div>
   );

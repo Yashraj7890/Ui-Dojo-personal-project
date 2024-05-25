@@ -144,12 +144,12 @@ const Home = () => {
               <div className="text-center text-[1.5rem]">
                 Welcome to Ui Dojo{" "}
                 <i class="fa-solid fa-brush fa-bounce pl-[0.4rem]"></i>. <br />A
-                place to experiment and learn the basics of frontend development
+                place to create, edit, fork, experiment and showoff web creations.
               </div>
-              <div className="mt-[1rem]">Signup to start with Ui Dojo</div>
+              <div className="mt-[2rem]">Signup to start with Ui Dojo</div>
               <div className="text-gray-400">
-                Features in development : Profile management, Forking projects,
-                Lazy Loading{" "}
+                Features in development : Profile management,
+                Lazy Loading, Project deletion {":)"}
               </div>
             </div>
           )}
