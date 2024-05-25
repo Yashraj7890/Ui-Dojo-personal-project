@@ -109,7 +109,7 @@ const Home = () => {
             <i className="fa-solid fa-magnifying-glass my-[0.8rem] text-[1.4rem] ml-[0.8rem]" />
             <input
               type="text"
-              className="flex-1 px-4 text-xl bg-white outline-none border-none text-primaryText placeholder:text-gray-600 my-[0.8rem]"
+              className="w-[58vw] px-4 text-xl bg-white outline-none border-none text-primaryText placeholder:text-gray-600 my-[0.8rem]"
               placeholder="Search..."
               value={term}
               onChange={(e)=>setTerm(e.target.value)}
