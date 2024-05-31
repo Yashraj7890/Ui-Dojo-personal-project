@@ -147,7 +147,7 @@ const Home = () => {
                 place to create, edit, fork, experiment and showoff web creations.
               </div>
               <div className="mt-[2rem]">Signup to start with Ui Dojo</div>
-              <div className="text-gray-400">
+              <div className="text-gray-400 text-center">
                 Features in development : Profile management,
                 Lazy Loading, Project deletion {":)"}
               </div>

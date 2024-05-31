@@ -10,11 +10,12 @@ import {
   getDocs,
   collection,
   getFirestore,
+  arrayRemove,
+  deleteDoc,
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import Swal from "sweetalert2";
-
 
 const getAllProjects = async () => {
   const db = getFirestore();
@@ -72,7 +73,6 @@ export const getUserProjects = async (uid) => {
 
 const Projects = ({ type, term, setTerm }) => {
   const user = useSelector((state) => state.user?.user);
-  console.log(user)
   const [projects, setProjects] = useState([]);
   const [fetching, setFetching] = useState(false);
   const [filtered, setFiltered] = useState([]);
@@ -117,14 +117,18 @@ const Projects = ({ type, term, setTerm }) => {
 
   return (
     <>
-      <div className="text-[1.2rem] pl-[1.4rem] font-bold">{type}</div>
+      <div className="text-[1.4rem] pl-[1.4rem] ">
+        {type} {"("}
+        {displayProjects.length}
+        {")"}
+      </div>
       <div className="w-full py-6 flex items-center justify-center gap-6 flex-wrap">
         {fetching ? (
           <i className="fa-solid fa-spinner fa-spin text-[2rem]"></i>
         ) : (
           <>
             {displayProjects.length === 0 ? (
-              <div>No projects for this category {":("}</div>
+              <div>No projects to show here {"  : ("}</div>
             ) : (
               displayProjects.map((project) => (
                 <Card
@@ -132,6 +136,8 @@ const Projects = ({ type, term, setTerm }) => {
                   user={user}
                   project={project}
                   type={type}
+                  setProjects={setProjects}
+                  displayProjects={displayProjects}
                 />
               ))
             )}
@@ -142,9 +148,10 @@ const Projects = ({ type, term, setTerm }) => {
   );
 };
 
-const Card = ({ project, user, type }) => {
+const Card = ({ project, user, type, setProjects, displayProjects }) => {
   const [loading, setLoading] = useState(false);
-  const navigate=useNavigate();
+  const navigate = useNavigate();
+
   const handleBookmarkClick = async () => {
     setLoading(true);
     const projectRef = doc(db, "Projects", project.id);
@@ -166,17 +173,70 @@ const Card = ({ project, user, type }) => {
     setLoading(false);
   };
 
-  const handleCopyClick = async (variant) => {
+  const handleUnbookmarkClick = async () => {
     setLoading(true);
-    navigate('/newProject', { state: { variant,project  } });
+    const projectRef = doc(db, "Projects", project.id);
+    try {
+      await updateDoc(projectRef, {
+        bookmarkedBy: arrayRemove(user.uid),
+      });
+      setProjects(displayProjects.filter((p) => p.id !== project.id));
+      Swal.fire({
+        title: "Removed bookmark successfully!",
+        icon: "info",
+      });
+    } catch (error) {
+      Swal.fire({
+        title: "Error unbookmarking the project!",
+        text: error.message,
+        icon: "info",
+      });
+    }
     setLoading(false);
   };
 
+  const handleDeleteProject = async () => {
+    setLoading(true);
+    const projectRef = doc(db, "Projects", project.id);
 
+    Swal.fire({
+      title: "Are you sure?",
+      showDenyButton: true,
+      showCancelButton: true,
+      text: "Once the project is deleted, there is no way of recovering it.",
+      confirmButtonText: "Yes",
+      denyButtonText: `No`,
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await deleteDoc(projectRef);
+          setProjects(displayProjects.filter((p) => p.id !== project.id));
+          Swal.fire({
+            title: "Deleted project successfully!",
+            icon: "info",
+          });
+        } catch (error) {
+          Swal.fire({
+            title: "Error deleting the project!",
+            text: error.message,
+            icon: "error",
+          });
+        }
+      } else if (result.isDenied) {
+        Swal.fire("Project deletion cancelled", "", "info");
+      }
+      setLoading(false);
+    });
+  };
 
+  const handleCopyClick = async (variant) => {
+    setLoading(true);
+    navigate("/newProject", { state: { variant, project } });
+    setLoading(false);
+  };
 
   return (
-    <div className="w-full cursor-pointer md:w-[430px] h-[355px] rounded-xl p-4 flex flex-col bg-gray-200 items-center gap-4 shadow-lg justify-center border border-gray-300">
+    <div className={`w-full cursor-pointer md:w-[430px] h-[355px] rounded-xl p-4 flex flex-col bg-gray-200 items-center gap-4 shadow-lg justify-center border  ${project.user.uid === user.uid ?"border-emerald-500":"border-gray-300"}`}>
       <div
         className="bg-white w-full h-full overflow-hidden"
         style={{ height: "100%" }}
@@ -203,32 +263,31 @@ const Card = ({ project, user, type }) => {
           <p className="text-black text-lg ">{project.title}</p>
           <p className="text-primaryText text-sm capitalize">
             {project?.user?.displayName
-              ? `by ${project.user.displayName}`
-              : project.user.email.split("@")[0]}
+              ? `by ${project.user.displayName} ${project.user.uid === user.uid ?" (You)":""}`
+              : `${project.user.email.split("@")[0]} ${project.user.uid === user.uid ?" (You)":""}`}
           </p>
         </div>
 
-      
-        {project.user.uid!==user.uid ? (
+        {project.user.uid !== user.uid ? (
           loading ? (
             <i className="text-[1.2rem] fa-solid fa-spinner fa-spin p-2 ml-[auto] rounded-2xl cursor-pointer"></i>
           ) : (
             <i
               className="text-[1.2rem] fa-solid fa-code-fork hover:bg-gray-300 p-2 ml-[auto] rounded-2xl cursor-pointer"
-              onClick={()=>handleCopyClick("Forked a project !")}
+              onClick={() => handleCopyClick("Forked a project !")}
             ></i>
           )
         ) : (
           <></>
         )}
 
-        {project.user.uid===user.uid ? (
+        {project.user.uid === user.uid ? (
           loading ? (
             <i className="text-[1.2rem] fa-solid fa-spinner fa-spin p-2 ml-[auto] rounded-2xl cursor-pointer"></i>
           ) : (
             <i
               className="text-[1.2rem] fa-solid fa-pen-to-square hover:bg-gray-300 p-2 ml-[auto] rounded-2xl cursor-pointer"
-              onClick={()=>handleCopyClick("You are editing your project !")}
+              onClick={() => handleCopyClick("You are editing your project !")}
             ></i>
           )
         ) : (
@@ -238,12 +297,29 @@ const Card = ({ project, user, type }) => {
         {loading ? (
           <i class="text-[1.2rem] fa-solid fa-spinner fa-spin p-2 ml-[auto] rounded-2xl cursor-pointer"></i>
         ) : (
-          <i
-            className=" text-[1.2rem] fa-solid fa-bookmark hover:bg-gray-300 ml-auto p-2 mr-[1rem] rounded-2xl cursor-pointer"
-            onClick={handleBookmarkClick}
-          ></i>
+          <>
+            {type == "Bookmarked Projects" ? (
+              <>
+                <i
+                  class="text-[1.2rem] fa-solid fa-ban hover:bg-gray-300 ml-auto p-2 mr-[1rem] rounded-2xl cursor-pointer"
+                  onClick={handleUnbookmarkClick}
+                ></i>
+              </>
+            ) : (
+              <i
+                className=" text-[1.2rem] fa-solid fa-bookmark hover:bg-gray-300 ml-auto p-2 mr-[1rem] rounded-2xl cursor-pointer"
+                onClick={handleBookmarkClick}
+              ></i>
+            )}
+          </>
         )}
-
+        {type === "Your Projects" && (<>
+          {loading?( <i class="text-[1.2rem] fa-solid fa-spinner fa-spin p-2 ml-[auto] rounded-2xl cursor-pointer"></i>):(<i
+            className="fa-regular fa-trash-can text-[1.2rem] hover:bg-gray-300  p-2 mr-[1rem] rounded-2xl cursor-pointer"
+            onClick={handleDeleteProject}
+          ></i>)}</>
+          
+        )}
       </div>
     </div>
   );

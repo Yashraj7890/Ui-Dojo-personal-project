@@ -17,7 +17,7 @@ const NewProject = () => {
   const [js, setJs] = useState("");
   const [output, setOutput] = useState("");
   const [editing, setEditing] = useState(false);
-  const [Title, setTitle] = useState("Untitled project");
+  const [Title, setTitle] = useState("Untitled");
   const user = useSelector((state) => state.user?.user);
   const location = useLocation();
   const { variant, project } = location.state || {};
@@ -36,7 +36,7 @@ const NewProject = () => {
         };
         await updateDoc(doc(db, "Projects", project.id), updatedFields)
           .then(() => {
-            setHtml("");setCss("");setJs("");setTitle("Untitled project");
+            setHtml("");setCss("");setJs("");setTitle("Untitled");
             Swal.fire({
               title:"Project updated successfully!",
               text:"Now you are working on a new project",
@@ -66,7 +66,7 @@ const NewProject = () => {
         };
         await setDoc(doc(db, "Projects", id), _doc)
           .then((res) => {
-            setHtml("");setCss("");setJs("");setTitle("Untitled project");
+            setHtml("");setCss("");setJs("");setTitle("Untitled");
             Swal.fire({
               title:"Project saved successfully!",
               text:"Now you are working on a new project",

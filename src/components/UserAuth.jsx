@@ -55,26 +55,40 @@ const UserAuth = ({
           </div>
         )}
         {isLogin ? (
+          <div>
           <div className="text-center">
             <button
               onClick={login}
               disabled={loading}
               className="outline-none bg-emerald-500 px-3 py-2 rounded-md text-white text-md cursor-pointer hover:bg-emerald-700 w-[5.5rem] mx-auto mt-[1rem]"
             >
-              {loading?(<i class="fa-solid fa-spinner fa-spin text-lg"></i>):("Log In")}
+              {loading?(<i class="fa-solid fa-spinner fa-spin text-lg"></i>):("Login")}
             </button>
-            <button onClick={signInWithGoogle}> continue with google</button>
+           
           </div>
-        ) : (
+          <div className="text-center py-[0.6rem] text-gray-500">or</div>
           <div className="text-center">
+            <button onClick={signInWithGoogle} style={{backgroundColor:"white",padding:"0.5rem",marginTop:"0.5rem",border:"2px solid black",borderRadius:"8px"}}> Continue with <i class="fa-brands fa-google"></i>oogle</button>
+          </div>
+
+          </div>
+          
+        ) : (
+          <div>
+          <div className="text-center ">
             <button
              disabled={loading}
               onClick={createNewUser}
               className="outline-none bg-emerald-500 px-3 py-2 rounded-md text-white text-md cursor-pointer hover:bg-emerald-700 w-[5.5rem] mx-auto mt-[1rem]"
             >
-              {loading?(<i class="fa-solid fa-spinner fa-spin text-lg"></i>):("Sign Up")}
+              {loading?(<i class="fa-solid fa-spinner fa-spin text-lg"></i>):("Signup")}
             </button>
-            <button onClick={signInWithGoogle}> sign up with google</button>
+            
+          </div>
+          <div className="text-center py-[0.6rem] text-gray-500">or</div>
+          <div className="text-center">
+          <button onClick={signInWithGoogle} style={{backgroundColor:"white",padding:"0.5rem",marginTop:"0.5rem",border:"2px solid black",borderRadius:"8px"}}> Continue with <i class="fa-brands fa-google"></i>oogle</button>
+          </div>
           </div>
         )}
 
