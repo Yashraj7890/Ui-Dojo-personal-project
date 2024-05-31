@@ -244,7 +244,7 @@ const Card = ({ project, user, type, setProjects, displayProjects }) => {
         <iframe
           title="Result"
           srcDoc={project.output}
-          style={{ border: "1px solid white", width: "100%", height: "100%" }}
+          style={{ border: "1px solid white", width: "100%", height: "100%",overflow:"hidden" }}
         ></iframe>
       </div>
       <div className="flex items-center justify-start gap-3 w-full text-black bg-gray-100 border-gray-300 shadow-lg border rounded-md">

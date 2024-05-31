@@ -125,6 +125,17 @@ const NewProject = () => {
     `;
     setOutput(combinedOutput);
   };
+  const handleCheck=()=>{
+   if(Title.length===0){
+    Swal.fire({
+      title:"Filename cannot be empty !",
+      icon:"error",
+    });
+   }else{
+    setEditing(false)
+   }
+
+  }
 
   return (
     <div className="w-screen h-screen overflow-hidden">
@@ -147,14 +158,14 @@ const NewProject = () => {
                   <input
                     type="text"
                     placeholder="Project Title"
-                    className="bg-[#383838] rounded-lg text-white border-none outline-none p-[5px]"
+                    className="bg-[#383838] rounded-lg text-white border-none outline-none p-[5px] w-[6.5rem]"
                     value={Title}
                     onChange={(e) => setTitle(e.target.value)}
                   ></input>
                 </>
               )}
               {!editing && (
-                <span className="text-white  text-nowrap pl-[0.3rem]">
+                <span className="text-white text-nowrap pl-[0.3rem]">
                   {Title}{" "}
                 </span>
               )}
@@ -162,7 +173,7 @@ const NewProject = () => {
                 <>
                   <i
                     class="fa-solid fa-check text-[1.2rem] cursor-pointer ml-[0.3rem] p-2 rounded-2xl text-white hover:bg-[#383838] mr-[1rem]"
-                    onClick={() => setEditing(false)}
+                    onClick={handleCheck}
                   ></i>
                 </>
               )}
@@ -276,15 +287,11 @@ const NewProject = () => {
             </Split>
           </div>
           <div className="w-full h-full overflow-y-auto overflow-x-auto">
-            <div className="text-lg text-start mt-[0.635rem] mb-[0.7rem]">
-              <span className="bg-gray-200 p-[0.4rem]  border-t-emerald-500 border-t-4">
-                Output{" "}
-              </span>
-            </div>
+            
             <iframe
               title="Result"
               srcDoc={output}
-              style={{ border: "none", width: "100%", height: "90%" }}
+              style={{ border: "none", width: "100%", height: "100%",overflow:"hidden",padding:"1rem" }}
             ></iframe>
           </div>
         </Split>
