@@ -63,6 +63,7 @@ const UserAuth = ({
             >
               {loading?(<i class="fa-solid fa-spinner fa-spin text-lg"></i>):("Log In")}
             </button>
+            <button onClick={signInWithGoogle}> continue with google</button>
           </div>
         ) : (
           <div className="text-center">
@@ -73,6 +74,7 @@ const UserAuth = ({
             >
               {loading?(<i class="fa-solid fa-spinner fa-spin text-lg"></i>):("Sign Up")}
             </button>
+            <button onClick={signInWithGoogle}> sign up with google</button>
           </div>
         )}
 

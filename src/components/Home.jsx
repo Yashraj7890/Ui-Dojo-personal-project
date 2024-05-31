@@ -154,7 +154,7 @@ const Home = () => {
             </div>
           )}
 
-          {user && <UserProfileDetails></UserProfileDetails>}
+          {user && <UserProfileDetails user={user}></UserProfileDetails>}
         </div>
 
         <div className="w-full">

@@ -9,7 +9,7 @@ import { auth } from "../firebase/firebase.config";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Swal from "sweetalert2";
-
+import {signInWithGoogle} from "../helper";
 const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

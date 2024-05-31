@@ -72,6 +72,7 @@ export const getUserProjects = async (uid) => {
 
 const Projects = ({ type, term, setTerm }) => {
   const user = useSelector((state) => state.user?.user);
+  console.log(user)
   const [projects, setProjects] = useState([]);
   const [fetching, setFetching] = useState(false);
   const [filtered, setFiltered] = useState([]);
