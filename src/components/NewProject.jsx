@@ -291,7 +291,7 @@ const NewProject = () => {
             <iframe
               title="Result"
               srcDoc={output}
-              style={{ border: "none", width: "100%", height: "100%",overflow:"hidden",padding:"1rem" }}
+              style={{ border: "none", width: "100%", height: "100%",overflow:"hidden"}}
             ></iframe>
           </div>
         </Split>
