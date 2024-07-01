@@ -4,13 +4,13 @@ This webapp enables users to create frontend web projects using HTML, CSS and JS
 
 Key Features:
 
-1.CRUD Operations
-2.Code execution/saving
-3.APIs
-4.Session manangement and Account management
-5.Authentication and Authorisation
-6.State management
-
+1. CRUD Operations
+2. Code execution/saving
+3. APIs
+4. Session manangement and Account management
+5. Authentication and Authorisation
+6. State management
+   
 The project has been deployed using https://vercel.com/
 
 Live: https://ui-dojo-personal-project-xi.vercel.app/
