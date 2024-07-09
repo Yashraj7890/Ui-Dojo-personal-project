@@ -74,7 +74,7 @@ const Home = () => {
               onClick={() => handleClick1("Your Projects")}
             >
               <p className=" text-primaryText  ">
-                <i class="fa-solid fa-layer-group pr-[0.7rem]"></i>Your Projects
+                <i class="fa-regular fa-file pr-[0.7rem]"></i>Your Projects
               </p>
             </div>
           )}
@@ -83,7 +83,7 @@ const Home = () => {
               className="flex cursor-pointer items-center justify-center hover:text-white  text-gray-400 px-2 py-2 gap-6 border border-gray-400 hover:border-white rounded-lg"
               onClick={() => handleClick1("All Projects")}
             >
-              <p className=" text-primaryText  ">All Projects</p>
+              <p className=" text-primaryText  "><i class="fa-solid fa-layer-group  pr-[0.7rem]"></i>All Projects</p>
             </div>
           )}
           {user && (
@@ -148,8 +148,7 @@ const Home = () => {
               </div>
               <div className="mt-[2rem]">Signup to start with Ui Dojo</div>
               <div className="text-gray-400 text-center">
-                Features in development : Profile management,
-                Lazy Loading {":)"}
+                Features in development : Profile management {":)"}
               </div>
             </div>
           )}

@@ -12,90 +12,132 @@ import {
   getFirestore,
   arrayRemove,
   deleteDoc,
+  orderBy,
+  startAfter,
+  limit,
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import Swal from "sweetalert2";
 
-const getAllProjects = async () => {
+const getAllProjects = async (limitCount = 5, lastDoc = null) => {
   const db = getFirestore();
   const projectsRef = collection(db, "Projects");
   try {
-    const querySnapshot = await getDocs(projectsRef);
+    let q = query(projectsRef, orderBy("id", "desc"), limit(limitCount));
+    if (lastDoc) {
+      q = query(q, startAfter(lastDoc));
+    }
+    const querySnapshot = await getDocs(q);
     const allProjects = querySnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
-    return allProjects;
+    return {
+      projects: allProjects,
+      lastDoc: querySnapshot.docs[querySnapshot.docs.length - 1],
+    };
   } catch (error) {
     console.error("Error fetching all projects: ", error);
-    return [];
+    return { projects: [], lastDoc: null };
   }
 };
 
-const getBookmarkedProjects = async (uid) => {
+const getBookmarkedProjects = async (uid, limitCount = 5, lastDoc = null) => {
   const db = getFirestore();
   const projectsRef = collection(db, "Projects");
   if (!uid) {
     console.error("No user UID provided");
-    return [];
+    return { projects: [], lastDoc: null };
   }
   try {
-    const q = query(projectsRef, where("bookmarkedBy", "array-contains", uid));
+    let q = query(
+      projectsRef,
+      where("bookmarkedBy", "array-contains", uid),
+      orderBy("id", "desc"),
+      limit(limitCount)
+    );
+    if (lastDoc) {
+      q = query(q, startAfter(lastDoc));
+    }
     const querySnapshot = await getDocs(q);
     const bookmarkedProjects = querySnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
-    return bookmarkedProjects;
+    return {
+      projects: bookmarkedProjects,
+      lastDoc: querySnapshot.docs[querySnapshot.docs.length - 1],
+    };
   } catch (error) {
     console.error("Error fetching bookmarked projects: ", error);
-    return [];
+    return { projects: [], lastDoc: null };
   }
 };
 
-export const getUserProjects = async (uid) => {
+export const getUserProjects = async (uid, limitCount = 5, lastDoc = null) => {
   const db = getFirestore();
   const projectsRef = collection(db, "Projects");
   try {
-    const q = query(projectsRef, where("user.uid", "==", uid));
+    let q = query(
+      projectsRef,
+      where("user.uid", "==", uid),
+      orderBy("id", "desc"),
+      limit(limitCount)
+    );
+    if (lastDoc) {
+      q = query(q, startAfter(lastDoc));
+    }
     const querySnapshot = await getDocs(q);
     const userProjects = querySnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
-    return userProjects;
+    return {
+      projects: userProjects,
+      lastDoc: querySnapshot.docs[querySnapshot.docs.length - 1],
+    };
   } catch (error) {
     console.error("Error fetching user projects: ", error);
-    return [];
+    return { projects: [], lastDoc: null };
   }
 };
-
 const Projects = ({ type, term, setTerm }) => {
   const user = useSelector((state) => state.user?.user);
   const [projects, setProjects] = useState([]);
   const [fetching, setFetching] = useState(false);
   const [filtered, setFiltered] = useState([]);
+  const [lastDoc, setLastDoc] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+
+
+  const fetchProjects = async (isLoadMore = false) => {
+    setFetching(true);
+    try {
+      let result;
+      if (type === "All Projects") {
+        result = await getAllProjects(5, isLoadMore ? lastDoc : null);
+      } else if (type === "Bookmarked Projects") {
+        result = await getBookmarkedProjects(user.uid, 5, isLoadMore ? lastDoc : null);
+      } else if (type === "Your Projects") {
+        result = await getUserProjects(user.uid, 5, isLoadMore ? lastDoc : null);
+      }
+     
+      const { projects: fetchedProjects, lastDoc: newLastDoc } = result;
+      
+      setProjects((prevProjects) => 
+        isLoadMore ? [...prevProjects, ...fetchedProjects] : fetchedProjects
+      );
+      setLastDoc(newLastDoc);
+      setHasMore(fetchedProjects.length >= 5);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setFetching(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      setFetching(true);
-      try {
-        let fetchedProjects = [];
-        if (type === "All Projects") {
-          fetchedProjects = await getAllProjects();
-        } else if (type === "Bookmarked Projects") {
-          fetchedProjects = await getBookmarkedProjects(user.uid);
-        } else if (type === "Your Projects") {
-          fetchedProjects = await getUserProjects(user.uid);
-        }
-        setProjects(fetchedProjects);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setFetching(false);
-      }
-    };
     fetchProjects();
   }, [type, user]);
 
@@ -115,6 +157,10 @@ const Projects = ({ type, term, setTerm }) => {
 
   const displayProjects = filtered.length > 0 ? filtered : projects;
 
+  const handleLoadMore = () => {
+    fetchProjects(true);
+  };
+
   return (
     <>
       <div className="text-[1.4rem] pl-[1.4rem] ">
@@ -123,12 +169,12 @@ const Projects = ({ type, term, setTerm }) => {
         {")"}
       </div>
       <div className="w-full py-6 flex items-center justify-center gap-6 flex-wrap">
-        {fetching ? (
+        {fetching && projects.length === 0 ? (
           <i className="fa-solid fa-spinner fa-spin text-[2rem]"></i>
         ) : (
           <>
             {displayProjects.length === 0 ? (
-              <div>No projects to show here {"  : ("}</div>
+              <div>No projects to show here {" : ("}</div>
             ) : (
               displayProjects.map((project) => (
                 <Card
@@ -144,6 +190,21 @@ const Projects = ({ type, term, setTerm }) => {
           </>
         )}
       </div>
+      {hasMore && !fetching && (
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={handleLoadMore}
+            className="px-4 py-2 bg-gray-100 text-black rounded hover:bg-white border border-black"
+          >
+            Load More
+          </button>
+        </div>
+      )}
+      {fetching && projects.length > 0 && (
+        <div className="flex justify-center mt-4">
+          <i className="fa-solid fa-spinner fa-spin text-[2rem]"></i>
+        </div>
+      )}
     </>
   );
 };
